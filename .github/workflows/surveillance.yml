@@ -15,7 +15,7 @@ concurrency:
 jobs:
   verifier:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +31,8 @@ jobs:
           SMTP_UTILISATEUR: ${{ secrets.SMTP_UTILISATEUR }}
           SMTP_MOT_DE_PASSE: ${{ secrets.SMTP_MOT_DE_PASSE }}
           DESTINATAIRE: ${{ secrets.DESTINATAIRE }}
+          NB_PASSAGES: "3"        # 3 vérifications par lancement
+          PAUSE_SECONDES: "120"   # une toutes les 2 minutes
 
       - name: Sauvegarder l'état
         run: |
