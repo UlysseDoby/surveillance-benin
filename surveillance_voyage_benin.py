@@ -78,6 +78,18 @@ def envoyer_mail(sujet: str, corps: str) -> None:
         s.send_message(msg, to_addrs=DESTINATAIRES)  # envoi en CCI
 
 
+SIGNATURE = "Doby"
+
+
+def composer(corps: str) -> str:
+    return (
+        "Bonjour,\n\n"
+        f"{corps}\n\n"
+        "Ce message est envoyé automatiquement par la surveillance du site.\n\n"
+        f"{SIGNATURE}\n"
+    )
+
+
 def verifier() -> None:
     texte = telecharger_texte()
     empreinte = hashlib.sha256(texte.encode()).hexdigest()
@@ -95,18 +107,42 @@ def verifier() -> None:
     etait_en_attente = ancien.get("bientot", True)
 
     if etait_en_attente and not en_attente:
-        details = f"\nMots-clés détectés : {', '.join(trouves)}" if trouves else ""
+        details = (
+            f"\nMots liés à la vente présents sur la page : {', '.join(trouves)}.\n"
+            if trouves else ""
+        )
         envoyer_mail(
-            "La page voyage.benin.bj n'affiche plus « bientôt disponible »",
-            f"La vente est peut-être ouverte.{details}\n{URL}",
+            "Alerte : la vente de vols vers le Bénin est peut-être ouverte",
+            composer(
+                "Le site voyage.benin.bj n'affiche plus la mention « bientôt disponible ».\n"
+                "La vente des billets pour les vols spéciaux vers le Bénin est peut-être ouverte.\n"
+                f"{details}\n"
+                "Il vaut mieux consulter le site rapidement :\n"
+                f"{URL}"
+            ),
         )
     elif nouveaux_mots:
         envoyer_mail(
-            "Vente de billets : mot-clé détecté sur voyage.benin.bj",
-            f"Nouveaux mots détectés : {', '.join(nouveaux_mots)}\n{URL}",
+            "Alerte : nouveaux mots liés à la vente sur voyage.benin.bj",
+            composer(
+                "De nouveaux mots liés à la vente sont apparus sur le site voyage.benin.bj : "
+                f"{', '.join(nouveaux_mots)}.\n"
+                "Cela peut annoncer l'ouverture de la vente de billets pour les vols spéciaux vers le Bénin.\n\n"
+                "Il vaut mieux consulter le site rapidement :\n"
+                f"{URL}"
+            ),
         )
     elif empreinte != ancien["hash"]:
-        envoyer_mail("Changement détecté sur voyage.benin.bj", f"La page a changé.\n{URL}")
+        envoyer_mail(
+            "Le site voyage.benin.bj a été modifié",
+            composer(
+                "Le contenu du site voyage.benin.bj vient de changer.\n"
+                "La modification est peut-être mineure. Elle peut aussi annoncer "
+                "l'ouverture de la vente de billets pour les vols spéciaux vers le Bénin.\n\n"
+                "Voici le lien pour vérifier :\n"
+                f"{URL}"
+            ),
+        )
 
     # L'état n'est enregistré qu'après l'envoi du mail : si l'envoi échoue,
     # l'alerte sera retentée au passage suivant au lieu d'être perdue.
