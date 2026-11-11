@@ -47,9 +47,9 @@ SMTP_HOTE = "smtp.gmail.com"
 SMTP_PORT = 465
 SMTP_UTILISATEUR = os.environ["SMTP_UTILISATEUR"]
 SMTP_MOT_DE_PASSE = os.environ["SMTP_MOT_DE_PASSE"]
-# Plusieurs adresses possibles, séparées par des virgules. Elles sont mises en copie
+# Plusieurs adresses possibles, séparées par des virgules, des points-virgules ou des espaces. Elles sont mises en copie
 # cachée (CCI) : aucun destinataire ne voit les autres.
-DESTINATAIRES = [a.strip() for a in os.environ["DESTINATAIRE"].split(",") if a.strip()]
+DESTINATAIRES = [a for a in re.split(r"[,;\s]+", os.environ["DESTINATAIRE"]) if a]
 
 
 def normaliser(texte: str) -> str:
